@@ -40,17 +40,17 @@ int kpayload(struct thread *td, struct kpayload_args* args){
 	//Reading kernel_base...
 	void* kernel_base = &((uint8_t*)__readmsr(0xC0000082))[-KERN_XFAST_SYSCALL];
 	uint8_t* kernel_ptr = (uint8_t*)kernel_base;
-	void** got_prison0 =   (void**)&kernel_ptr[0x10986a0];
-	void** got_rootvnode = (void**)&kernel_ptr[0x22c1a70];
+	void** got_prison0 =   (void**)&kernel_ptr[0x1139180];
+	void** got_rootvnode = (void**)&kernel_ptr[0x22F3570];
 
 	//Resolve kernel functions...
-	int (*copyout)(const void *kaddr, void *uaddr, size_t len) = (void *)(kernel_base + 0x1ea630);
-	int (*printfkernel)(const char *fmt, ...) = (void *)(kernel_base + 0x436040);
-	int (*set_nclk_mem_spd)(int val) = (void *)(kernel_base + 0x30C270);
-	int (*set_pstate)(int val) = (void *)(kernel_base + 0x4CC8A0);
-	int (*set_gpu_freq)(int cu, unsigned int freq) = (void *)(kernel_base + 0x4D2530);
-	int (*update_vddnp)(unsigned int cu) = (void *)(kernel_base + 0x4D2AA0);
-	int (*set_cu_power_gate)(unsigned int cu) = (void *)(kernel_base + 0x4D2C40);
+	int (*copyout)(const void *kaddr, void *uaddr, size_t len) = (void *)(kernel_base + 0x405D80);
+	int (*printfkernel)(const char *fmt, ...) = (void *)(kernel_base + 0x11B150);
+	int (*set_nclk_mem_spd)(int val) = (void *)(kernel_base + 0x28420);
+	int (*set_pstate)(int val) = (void *)(kernel_base + 0x4E1600);
+	int (*set_gpu_freq)(int cu, unsigned int freq) = (void *)(kernel_base + 0x4DF5E0);
+	int (*update_vddnp)(unsigned int cu) = (void *)(kernel_base + 0x4DFB60);
+	int (*set_cu_power_gate)(unsigned int cu) = (void *)(kernel_base + 0x4DFF80);
 	
 	cred->cr_uid = 0;
 	cred->cr_ruid = 0;
@@ -79,18 +79,18 @@ int kpayload(struct thread *td, struct kpayload_args* args){
 	uint64_t cr0 = readCr0();
 	writeCr0(cr0 & ~X86_CR0_WP);
 	
-	kernel_ptr[0x10D97E] = 3; //5.05 pstate when shutdown
+	kernel_ptr[0x2891CE] = 3; //5.55 pstate when shutdown
 
 	//Kexec init
-	void *DT_HASH_SEGMENT = (void *)(kernel_base+ 0xB1D820); // I know it's for 4.55 but I think it will works
+	void *DT_HASH_SEGMENT = (void *)(kernel_base+ 0xBFB3E0);
 	memcpy(DT_HASH_SEGMENT, kexec_data, kexec_size);
 
 	void (*kexec_init)(void *, void *) = DT_HASH_SEGMENT;
 
-	kexec_init((void *)(kernel_base+0x436040), NULL);
+	kexec_init((void *)(kernel_base+0x11B150), NULL);
 
 	// Say hello and put the kernel base in userland to we can use later
-	printfkernel("PS4 Linux Loader for 5.05 by valentinbreiz\n");
+	printfkernel("PS4 Linux Loader for 5.55\n");
 
 	printfkernel("kernel base is:0x%016llx\n", kernel_base);
 
